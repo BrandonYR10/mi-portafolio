@@ -111,7 +111,7 @@ function initProjectFilters() {
             filterButtons.forEach(btn => btn.classList.remove('active'));
             button.classList.add('active');
             
-            // Filtrar proyectos con delay para animación
+            // Filtrar proyectos con mejor manejo de transiciones
             projectCards.forEach((card, index) => {
                 const category = card.getAttribute('data-category');
                 
@@ -126,8 +126,25 @@ function initProjectFilters() {
                         card.classList.add('hidden');
                         card.classList.remove('show');
                     }
-                }, index * 50); // Delay escalonado de 50ms
+                }, index * 20); // Delay reducido para mejor rendimiento
             });
+            
+            // Recalcular posiciones después del filtrado
+            setTimeout(() => {
+                // Forzar recálculo del layout
+                document.body.offsetHeight;
+                
+                // Reinicializar AOS para las secciones siguientes
+                AOS.refresh();
+                
+                // Asegurar que la sección de contacto esté visible
+                const contactSection = document.querySelector('#contact');
+                if (contactSection) {
+                    contactSection.style.display = 'block';
+                    contactSection.style.visibility = 'visible';
+                    contactSection.style.opacity = '1';
+                }
+            }, projectCards.length * 20 + 200);
         });
     });
 }
@@ -154,6 +171,43 @@ currentYearSpan.textContent = new Date().getFullYear();
 // Initialize Skills Carousels
 let carousels = [];
 
+// Handle mobile menu visibility based on screen size
+function handleMobileMenuVisibility() {
+    // Verificar que los elementos existan
+    if (!hamburger || !navMenu) return;
+    
+    const isMobile = window.innerWidth <= 768;
+    
+    if (isMobile) {
+        // Show hamburger menu on mobile - solo cambiar si no está ya visible
+        if (hamburger.style.display !== 'flex') {
+            hamburger.style.display = 'flex';
+        }
+        // No cambiar el display del nav-menu en móviles, dejar que el CSS lo maneje
+    } else {
+        // Hide hamburger menu on desktop
+        hamburger.style.display = 'none';
+        navMenu.style.display = 'flex'; // Show desktop menu
+        
+        // Close mobile menu if open
+        hamburger.classList.remove('active');
+        navMenu.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
+// Ejecutar inmediatamente si los elementos ya están disponibles
+if (document.readyState === 'loading') {
+    // Si el DOM aún no está listo, esperar
+    document.addEventListener('DOMContentLoaded', handleMobileMenuVisibility);
+} else {
+    // Si el DOM ya está listo, ejecutar inmediatamente
+    handleMobileMenuVisibility();
+}
+
+// También ejecutar después de un pequeño delay para asegurar que todo esté renderizado
+setTimeout(handleMobileMenuVisibility, 100);
+
 document.addEventListener('DOMContentLoaded', () => {
     // Comentado: Ahora usamos CSS puro para el carrusel infinito
     // Initialize carousels when DOM is loaded
@@ -173,8 +227,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 500); // Reducido a 500ms para inicio más rápido
     */
     
+    // Inicializar estado de proyectos
+    const projectCards = document.querySelectorAll('.project-card');
+    projectCards.forEach(card => {
+        card.classList.add('show');
+    });
+    
     // Inicializar filtros de proyectos
     initProjectFilters();
+    
+    // Configurar visibilidad del menú móvil inmediatamente
+    handleMobileMenuVisibility();
+    
+    // También configurar en load y resize
+    window.addEventListener('load', handleMobileMenuVisibility);
+    window.addEventListener('resize', handleMobileMenuVisibility);
+    
+    // Ejecutar múltiples veces al inicio para asegurar que se configure correctamente
+    setTimeout(handleMobileMenuVisibility, 50);
+    setTimeout(handleMobileMenuVisibility, 200);
+    setTimeout(handleMobileMenuVisibility, 500);
 });
 
 // Navbar scroll effect
@@ -205,6 +277,13 @@ hamburger.addEventListener('click', () => {
             bar.style.opacity = '1';
         }
     });
+    
+    // Prevent body scroll when menu is open
+    if (hamburger.classList.contains('active')) {
+        document.body.style.overflow = 'hidden';
+    } else {
+        document.body.style.overflow = '';
+    }
 });
 
 // Close mobile menu when clicking on a link
@@ -219,7 +298,28 @@ navLinks.forEach(link => {
             bar.style.transform = 'none';
             bar.style.opacity = '1';
         });
+        
+        // Restore body scroll
+        document.body.style.overflow = '';
     });
+});
+
+// Close mobile menu when clicking outside
+document.addEventListener('click', (e) => {
+    if (!hamburger.contains(e.target) && !navMenu.contains(e.target)) {
+        hamburger.classList.remove('active');
+        navMenu.classList.remove('active');
+        
+        // Reset hamburger bars
+        const bars = hamburger.querySelectorAll('.bar');
+        bars.forEach(bar => {
+            bar.style.transform = 'none';
+            bar.style.opacity = '1';
+        });
+        
+        // Restore body scroll
+        document.body.style.overflow = '';
+    }
 });
 
 // Smooth scrolling for navigation links
@@ -230,7 +330,10 @@ navLinks.forEach(link => {
         const targetSection = document.querySelector(targetId);
         
         if (targetSection) {
-            const offsetTop = targetSection.offsetTop - 70; // Account for fixed navbar
+            // Calculate offset based on device
+            const isMobile = window.innerWidth <= 768;
+            const offsetTop = targetSection.offsetTop - (isMobile ? 60 : 70);
+            
             window.scrollTo({
                 top: offsetTop,
                 behavior: 'smooth'
@@ -436,6 +539,9 @@ window.addEventListener('load', () => {
             preloader.style.display = 'none';
         }, 500);
     }
+    
+    // Asegurar que el menú móvil esté configurado correctamente después de que todo esté cargado
+    handleMobileMenuVisibility();
 });
 
 // Keyboard navigation support
@@ -502,4 +608,33 @@ console.log(`
 🌐 Desarrollado con HTML5, CSS3 y JavaScript vanilla
 📧 Contáctame: tuemail@ejemplo.com
 🎠 Carrusel de habilidades implementado con éxito
-`); 
+`);
+
+// Optimize performance for mobile devices
+function optimizeForMobile() {
+    const isMobile = window.innerWidth <= 768;
+    
+    if (isMobile) {
+        // Reduce animation duration for better performance
+        document.documentElement.style.setProperty('--transition', 'all 0.2s ease');
+        
+        // Disable hover effects on mobile
+        const style = document.createElement('style');
+        style.textContent = `
+            @media (max-width: 768px) {
+                .project-card:hover,
+                .skill-item:hover,
+                .stat:hover,
+                .social-link:hover {
+                    transform: none !important;
+                    box-shadow: none !important;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+}
+
+// Call optimization on load and resize
+window.addEventListener('load', optimizeForMobile);
+window.addEventListener('resize', optimizeForMobile); 
