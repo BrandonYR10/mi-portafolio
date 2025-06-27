@@ -1,0 +1,36 @@
+{
+  "name": "portfolio-profesional",
+  "version": "1.0.0",
+  "description": "Portafolio profesional de desarrollador Full Stack y especialista en IA",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "dev": "live-server --port=8000",
+    "build": "echo 'No build step required for static site'",
+    "deploy": "echo 'Deploy to GitHub Pages or Netlify'"
+  },
+  "keywords": [
+    "portfolio",
+    "developer",
+    "full-stack",
+    "ai",
+    "cloud-computing",
+    "responsive",
+    "html5",
+    "css3",
+    "javascript"
+  ],
+  "author": "Tu Nombre",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tu-usuario/tu-repositorio.git"
+  },
+  "homepage": "https://tu-usuario.github.io/tu-repositorio",
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+} 
